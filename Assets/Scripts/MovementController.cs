@@ -8,29 +8,35 @@ public class MovementController : MonoBehaviour
 
     private float _angleVelocity;
     private readonly float _smoothTime = 0.1f;
-    private readonly string _runMotionKey = "moving";
+    private string _runMotionKey;
 
     public bool Freeze { get; set; } = false;
 
-    private void Awake()
+
+    public void Init(Rigidbody rigidbody, Animator animator, params string[] movementMotionKeys)
     {
-        _animator = GetComponent<Animator>();
-        _rigidbody = GetComponent<Rigidbody>();
+        _rigidbody = rigidbody;
+        _animator = animator;
+
+        if (movementMotionKeys.Length != 1)
+            throw new System.InvalidOperationException();
+        _runMotionKey = movementMotionKeys[0];
     }
 
-    private void Update()
+    public enum State : int
     {
-        var shiftPressed = Input.GetKey(KeyCode.LeftShift);
-        Move(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")), shiftPressed);
+        None,
+        Sneaking,
+        Walking,
+        Running
     }
 
-    protected void Move(Vector2 input, bool running = false)
+    public void Move(Vector2 input, State state)
     {
         if (Freeze)
         {
-            //SoundAudioManager.Instance
-            // .StopSound(SoundAudioManager.AudioData.Kind.Movement);
-
+            state = State.None;
+            _animator.SetInteger(_runMotionKey, 0);
             return;
         }
 
@@ -42,14 +48,12 @@ public class MovementController : MonoBehaviour
 
         if (plane == Vector3.zero)
         {
-            _animator.SetInteger(_runMotionKey, 0);
-
-            //SoundAudioManager.Instance
-            //  .StopSound(SoundAudioManager.AudioData.Kind.Movement);
+            _animator.SetInteger(_runMotionKey, (int)State.None);
             return;
         }
 
-        _animator.SetInteger(_runMotionKey, running ? 2 : 1);
+        _animator.SetInteger(_runMotionKey, (int) state);
+
 
         var targetAngle = Mathf.Atan2(plane.x, plane.z) * Mathf.Rad2Deg;
         var angle = Mathf.SmoothDampAngle(transform.eulerAngles.y,
@@ -60,5 +64,4 @@ public class MovementController : MonoBehaviour
         //_rigidbody.MovePosition(_rigidbody.position + offset);
         transform.rotation = Quaternion.Euler(0f, angle, 0f);
     }
-
 }
