@@ -2,16 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MovementController))]
+[RequireComponent(typeof(MovementController), typeof(AttackSystem))]
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] private Animator animator;
     [SerializeField] private MovementController movement;
+    [SerializeField] private AttackSystem attackSystem;
 
     private void Awake()
     {
-        var rigidbody = GetComponent<Rigidbody>();
-        var animator = GetComponent<Animator>();
-        movement.Init(rigidbody, animator, "moveStep");
+        movement.Init(animator, "moveStep");
+        attackSystem.Init(animator, "attack");
     }
 
     private void Update()
@@ -28,6 +29,10 @@ public class PlayerController : MonoBehaviour
         var input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         state = input.normalized.magnitude == 0 ? MovementController.State.None : state;
         movement.Move(input, state);
+
+        if (Input.GetMouseButtonDown(0))
+            attackSystem.Attack();
+
     }
 
     

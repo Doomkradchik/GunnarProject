@@ -1,11 +1,7 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Animator))]
-public class MovementController : MonoBehaviour
+public class MovementController : EntityComponent
 {
-    private Animator _animator;
-    private Rigidbody _rigidbody;
-
     private float _angleVelocity;
     private readonly float _smoothTime = 0.1f;
     private string _runMotionKey;
@@ -13,15 +9,12 @@ public class MovementController : MonoBehaviour
     public bool Freeze { get; set; } = false;
 
 
-    public void Init(Rigidbody rigidbody, Animator animator, params string[] movementMotionKeys)
+    public override void Init(Animator animator, params string[] movementMotionKeys)
     {
-        _rigidbody = rigidbody;
-        _animator = animator;
-
-        if (movementMotionKeys.Length != 1)
-            throw new System.InvalidOperationException();
+        base.Init(animator, movementMotionKeys);
         _runMotionKey = movementMotionKeys[0];
     }
+
 
     public enum State : int
     {
